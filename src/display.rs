@@ -5,7 +5,7 @@ use winit::{
     event::{Event, KeyEvent, WindowEvent},
     event_loop::EventLoop,
     keyboard::{Key, NamedKey},
-    window::WindowBuilder,
+    window::Window,
 };
 
 const ZOOM_INCREMENT_FACTOR: f32 = 1.1;
@@ -50,9 +50,7 @@ impl Default for AppState {
 }
 
 impl GpuApplication for AppState {
-    fn render(self, window_builder: WindowBuilder) -> impl Future {
-        let event_loop = EventLoop::new().unwrap();
-        let window = Arc::new(window_builder.build(&event_loop).unwrap());
+    fn render(self, window: Arc<Window>, event_loop: EventLoop<()>) -> impl Future {
         let main_window_id = window.clone().id();
         let mut state = Some(self.clone());
         async move {

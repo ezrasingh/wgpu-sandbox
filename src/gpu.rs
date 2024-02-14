@@ -1,27 +1,33 @@
 use std::future::Future;
 use std::sync::Arc;
-use web_sys::HtmlCanvasElement;
-use winit::window::{Window, WindowBuilder};
+use web_sys::{HtmlCanvasElement, HtmlDivElement};
+use winit::{
+    event_loop::EventLoop,
+    window::{Window, WindowBuilder},
+};
 
 pub trait GpuApplication {
-    fn render(self, window_builder: WindowBuilder) -> impl Future
+    fn render(self, window: Arc<Window>, event_loop: EventLoop<()>) -> impl Future
     where
         Self: Sized;
 
-    fn setup(&self, canvas: HtmlCanvasElement) -> WindowBuilder
+    fn setup(&self, container: HtmlDivElement) -> (Window, EventLoop<()>)
     where
         Self: Sized,
     {
-        use winit::platform::web::WindowBuilderExtWebSys;
-        let (width, height) = (canvas.offset_width(), canvas.offset_height());
-        let size = if width > 0 && height > 0 {
-            winit::dpi::PhysicalSize::new(width, height)
-        } else {
-            winit::dpi::PhysicalSize::new(1, 1)
-        };
-        WindowBuilder::new()
-            .with_inner_size(size)
-            .with_canvas(Some(canvas.clone()))
+        use winit::platform::web::WindowExtWebSys;
+        let event_loop = EventLoop::new().unwrap();
+        let window = WindowBuilder::new().build(&event_loop).unwrap();
+
+        let canvas: HtmlCanvasElement = window.canvas().unwrap();
+
+        canvas
+            .style()
+            .set_css_text("display: block; width: 100%; height: 100%");
+
+        let _ = container.append_child(&canvas);
+
+        (window, event_loop)
     }
 }
 

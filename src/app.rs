@@ -1,21 +1,22 @@
 use crate::display::AppState;
 use crate::gpu::GpuApplication;
 use leptos::*;
-use web_sys::HtmlCanvasElement;
-use winit::window::WindowBuilder;
+use std::sync::Arc;
+use web_sys::HtmlDivElement;
 
 #[component]
 pub fn App() -> impl IntoView {
-    let node = create_node_ref::<html::Canvas>();
+    let node = create_node_ref::<html::Div>();
     let (app, _) = create_signal::<AppState>(Default::default());
-    let canvas = move || <HtmlCanvasElement as Clone>::clone(&node.get_untracked().unwrap());
-    let builder = move || <WindowBuilder as Clone>::clone(&app.get().setup(canvas()));
+    let container = move || <HtmlDivElement as Clone>::clone(&node.get().unwrap());
 
     spawn_local(async move {
-        app.get().render(builder()).await;
+        let runtime = app.get();
+        let (window, event_loop) = runtime.setup(container());
+        runtime.render(Arc::new(window), event_loop).await;
     });
 
     view! {
-        <canvas node_ref=node/>
+        <div class="flex" node_ref=node/>
     }
 }
