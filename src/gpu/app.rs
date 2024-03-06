@@ -1,4 +1,4 @@
-use crate::gpu::{context::GpuContext, helpers::GpuInstance};
+use crate::gpu::{context::GpuContext, instance::GpuInstance};
 use std::borrow::{Borrow, BorrowMut};
 use std::future::Future;
 use std::sync::Arc;
@@ -51,47 +51,22 @@ pub trait GpuApplication {
         Self: encase::ShaderType,
         Self: encase::internal::WriteInto,
     {
-        let frame = gpu.surface.get_current_texture().unwrap();
-        let view = frame
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
-
-        gpu.queue.write_buffer(
-            &gpu.uniform_buffer,
-            0,
+        gpu.render(
             &self
                 .as_wgsl_bytes()
                 .expect("Error in encase translating AppState struct to WGSL bytes."),
-        );
-
-        let mut encoder = gpu
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-        {
-            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color::GREEN),
-                        store: wgpu::StoreOp::Store,
-                    },
-                })],
-                depth_stencil_attachment: None,
-                occlusion_query_set: None,
-                timestamp_writes: None,
-            });
-
-            render_pass.set_pipeline(&gpu.pipeline);
-            render_pass.set_bind_group(0, &gpu.bind_group, &[]);
-            render_pass.draw(0..3, 0..1);
-        }
-        gpu.queue.submit(Some(encoder.finish()));
-        frame.present();
+        )
     }
 
     fn on_keyboard(&mut self, _input: KeyEvent, _window: Arc<Window>, _gpu: &GpuContext) {}
+
+    fn on_cursor_move(
+        &mut self,
+        _position: winit::dpi::PhysicalPosition<f64>,
+        _window: Arc<Window>,
+        _gpu: &GpuContext,
+    ) {
+    }
 
     fn on_scroll(&mut self, _delta: MouseScrollDelta, _window: Arc<Window>, _gpu: &GpuContext)
     where
@@ -107,7 +82,7 @@ pub trait GpuApplication {
         Self: encase::internal::WriteInto,
     {
         async {
-            let instance = GpuInstance::new(window.clone(), wgpu::Instance::default()).await;
+            let instance = GpuInstance::new(window.clone()).await;
             let mut gpu = self.build(instance);
 
             event_loop
@@ -123,11 +98,14 @@ pub trait GpuApplication {
                             WindowEvent::MouseWheel { delta, .. } => {
                                 self.on_scroll(delta, window.to_owned(), gpu.borrow())
                             }
+                            WindowEvent::CursorMoved { position, .. } => {
+                                self.on_cursor_move(position, window.to_owned(), gpu.borrow())
+                            }
                             WindowEvent::Resized(new_size) => {
                                 self.on_resize(new_size, window.to_owned(), gpu.borrow_mut())
                             }
                             WindowEvent::RedrawRequested => {
-                                self.on_redraw(window.to_owned(), gpu.borrow())
+                                self.on_redraw(window.to_owned(), gpu.borrow_mut())
                             }
                             _ => {}
                         }

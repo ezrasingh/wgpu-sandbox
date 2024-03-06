@@ -1,7 +1,7 @@
 use crate::gpu::{
     app::GpuApplication,
     context::{GpuContext, GpuShaderConfig},
-    helpers::GpuInstance,
+    instance::GpuInstance,
 };
 use encase::ShaderType;
 use std::sync::Arc;
