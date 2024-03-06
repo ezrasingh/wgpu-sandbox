@@ -2,7 +2,6 @@ pub mod mandelbrot;
 pub mod triangle;
 
 use leptos::*;
-use std::default::Default;
 use std::sync::Arc;
 
 use crate::gpu::app::GpuApplication;
