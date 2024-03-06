@@ -56,5 +56,5 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     }
     let value = f32(final_iteration) / f32(max_iterations);
 
-    return vec4(0.0, value, 0.0, 1.0);
+    return vec4(value, 0.0, value, 1.0);
 }

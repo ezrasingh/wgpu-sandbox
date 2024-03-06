@@ -21,3 +21,4 @@ wgpu = { version = "0.19.1", default-features = false, features = [
 winit = "0.29.10"
 glam = "0.25.0"
 encase = { version = "0.7.0", features = ["glam"] }
+leptos_router = { version = "0.6.9", features = ["csr"] }

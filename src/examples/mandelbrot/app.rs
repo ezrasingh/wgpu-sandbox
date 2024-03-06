@@ -11,7 +11,7 @@ use winit::{
     window::Window,
 };
 
-const ZOOM_INCREMENT_FACTOR: f32 = 1.001;
+const ZOOM_INCREMENT_FACTOR: f32 = 0.01;
 const CAMERA_POS_INCREMENT_FACTOR: f32 = 0.1;
 
 #[derive(ShaderType, Clone, Copy)]
