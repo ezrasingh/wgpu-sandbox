@@ -1,8 +1,0 @@
-{
-    "rust-analyzer.procMacro.ignored": {
-        "leptos_macro": [
-            "component",
-            "server"
-        ],
-    }
-}
